@@ -15,6 +15,9 @@
 -  **Redis Caching**: Sub-100ms response times with 30s TTL caching
 -  **Rate Limiting**: Built-in rate limiting with exponential backoff
 -  **Metrics & Observability**: Built-in metrics endpoint for performance monitoring
+-  **Cursor-based Pagination**: Efficient pagination with `limit` and `next_cursor` for large datasets
+-  **Time Period Filtering**: Supports `1h`, `24h`, and `7d` intervals with adaptive scaling
+-  **Advanced Sorting**: Sort by volume, price change, market cap, or liquidity
 -  **Docker Support**: One-command deployment with Docker Compose
 -  **Type-Safe**: Full TypeScript implementation with strict types
 -  **Tested**: Comprehensive test suite with CI/CD integration
@@ -223,14 +226,21 @@ docker-compose down
 ### REST API
 
 #### GET `/api/tokens`
-Get aggregated token data for specific addresses.
+Get aggregated token data for specific addresses with cursor-based pagination and time period filtering.
 
 **Query Parameters:**
 - `addresses` (required): Comma-separated list of token addresses
+- `limit` (optional): Number of results per page (default: 20, max: 100)
+- `cursor` (optional): Base64-encoded cursor for pagination (from previous response)
+- `interval` (optional): Time period filter - `1h` | `24h` | `7d` (default: `24h`)
 
 **Example:**
 ```bash
-curl "http://localhost:3000/api/tokens?addresses=0x123,0x456"
+# First page
+curl "http://localhost:3000/api/tokens?addresses=0x123,0x456&limit=20&interval=24h"
+
+# Next page using cursor
+curl "http://localhost:3000/api/tokens?addresses=0x123,0x456&limit=20&cursor=eyJpbmRleCI6MjB9"
 ```
 
 **Response:**
@@ -260,19 +270,25 @@ curl "http://localhost:3000/api/tokens?addresses=0x123,0x456"
     }
   ],
   "count": 1,
+  "next_cursor": "eyJpbmRleCI6MjB9",
+  "has_more": true,
+  "interval": "24h",
   "timestamp": 1234567890
 }
 ```
 
 #### GET `/api/search`
-Search for tokens by name or symbol.
+Search for tokens by name or symbol with cursor-based pagination and time period filtering.
 
 **Query Parameters:**
 - `query` (required): Search query string
+- `limit` (optional): Number of results per page (default: 20, max: 100)
+- `cursor` (optional): Base64-encoded cursor for pagination (from previous response)
+- `interval` (optional): Time period filter - `1h` | `24h` | `7d` (default: `24h`)
 
 **Example:**
 ```bash
-curl "http://localhost:3000/api/search?query=pepe"
+curl "http://localhost:3000/api/search?query=pepe&limit=20&interval=1h"
 ```
 
 #### GET `/api/health`
@@ -288,17 +304,21 @@ Health check endpoint.
 ```
 
 #### GET `/api/top`
-Top Movers Leaderboard - Ranked tokens by volume, price change, or market cap.
+Top Movers Leaderboard - Ranked tokens by volume, price change, or market cap with cursor-based pagination and time period filtering.
 
 **Query Parameters:**
 - `metric` (optional): `volume24h` | `priceChangePercent24h` | `marketCap` | `liquidity` (default: `volume24h`)
-- `limit` (optional): Number of results (default: 10, max: 100)
-- `interval` (optional): `1h` | `24h` | `7d` (for future use)
+- `limit` (optional): Number of results per page (default: 20, max: 100)
+- `cursor` (optional): Base64-encoded cursor for pagination (from previous response)
+- `interval` (optional): `1h` | `24h` | `7d` (default: `24h`) - applies adaptive scaling to metrics
 
 **Example:**
 ```bash
-curl "http://localhost:3000/api/top?metric=volume24h&limit=5"
-curl "http://localhost:3000/api/top?metric=priceChangePercent24h&limit=10"
+# First page
+curl "http://localhost:3000/api/top?metric=volume24h&limit=20&interval=24h"
+
+# Next page with 1-hour interval
+curl "http://localhost:3000/api/top?metric=priceChangePercent24h&limit=20&interval=1h&cursor=eyJpbmRleCI6MjB9"
 ```
 
 **Response:**

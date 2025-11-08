@@ -3,6 +3,8 @@ import { redisService } from '../services/redis.service';
 import { logger } from '../utils/logger';
 import { config } from '../config';
 import { AggregatedMemeCoin } from '../types';
+import { decodeCursor, paginate } from '../utils/pagination';
+import { adjustIntervalData } from '../utils/intervalFilter';
 
 const router = Router();
 
@@ -12,18 +14,21 @@ const router = Router();
  * Fetches top tokens from cache by metric (volume24h, priceChangePercent24h, marketCap)
  * 
  * Query Parameters:
- * - metric: 'volume24h' | 'priceChangePercent24h' | 'marketCap' (default: 'volume24h')
- * - limit: number of results (default: 10, max: 100)
- * - interval: '1h' | '24h' | '7d' (for future use, currently uses 24h data)
+ * - metric: 'volume24h' | 'priceChangePercent24h' | 'marketCap' | 'liquidity' (default: 'volume24h')
+ * - limit: number of results per page (default: 20, max: 100)
+ * - cursor: Base64-encoded cursor for pagination
+ * - interval: '1h' | '24h' | '7d' (default: '24h') - applies adaptive scaling
  * 
  * Example:
- * GET /api/top?metric=volume24h&limit=5
- * GET /api/top?metric=priceChangePercent24h&limit=10
+ * GET /api/top?metric=volume24h&limit=20
+ * GET /api/top?metric=priceChangePercent24h&limit=10&interval=1h
+ * GET /api/top?metric=volume24h&limit=20&cursor=eyJpbmRleCI6MjB9
  */
 router.get('/', async (req: Request, res: Response) => {
   try {
     const metric = (req.query.metric as string) || 'volume24h';
-    const limit = Math.min(Number(req.query.limit) || 10, 100); // Max 100 results
+    const limit = Math.min(Number(req.query.limit) || 20, 100); // Default 20, max 100
+    const cursor = decodeCursor(req.query.cursor as string);
     const interval = (req.query.interval as string) || '24h';
 
     // Validate metric
@@ -32,6 +37,15 @@ router.get('/', async (req: Request, res: Response) => {
       return res.status(400).json({
         success: false,
         error: `Invalid metric. Must be one of: ${validMetrics.join(', ')}`,
+      });
+    }
+
+    // Validate interval
+    const validIntervals = ['1h', '24h', '7d'];
+    if (!validIntervals.includes(interval)) {
+      return res.status(400).json({
+        success: false,
+        error: `Invalid interval. Must be one of: ${validIntervals.join(', ')}`,
       });
     }
 
@@ -95,12 +109,18 @@ router.get('/', async (req: Request, res: Response) => {
       });
     }
 
-    // Sort by metric
-    const sorted = allTokens.sort((a, b) => {
+    // Apply interval filtering to all tokens
+    const adjustedTokens = allTokens.map((token) => ({
+      ...token,
+      priceData: adjustIntervalData(token.priceData, interval),
+    }));
+
+    // Sort by metric (using adjusted data)
+    const sorted = adjustedTokens.sort((a, b) => {
       const getValue = (token: AggregatedMemeCoin): number => {
         switch (metric) {
           case 'priceChangePercent24h':
-            return token.priceData?.priceChange24h || 0;
+            return token.priceData?.priceChangePercent24h || 0;
           case 'marketCap':
             return token.priceData?.marketCap || token.totalLiquidity || 0;
           case 'liquidity':
@@ -114,14 +134,15 @@ router.get('/', async (req: Request, res: Response) => {
       return getValue(b) - getValue(a); // Descending order
     });
 
-    // Take top N
-    const topTokens = sorted.slice(0, limit);
+    // Apply pagination
+    const { data: paginatedTokens, nextCursor, hasMore } = paginate(sorted, limit, cursor);
 
-    logger.info(`[TOP] Returning top ${topTokens.length} tokens by ${metric}`);
+    logger.info(`[TOP] Returning ${paginatedTokens.length} tokens by ${metric} (interval: ${interval})`);
 
-    // Format response
-    const formatted = topTokens.map((token, index) => ({
-      rank: index + 1,
+    // Format response with rank based on pagination
+    const startRank = (cursor?.index || 0) + 1;
+    const formatted = paginatedTokens.map((token, index) => ({
+      rank: startRank + index,
       token: {
         address: token.token.address,
         symbol: token.token.symbol,
@@ -145,6 +166,8 @@ router.get('/', async (req: Request, res: Response) => {
       count: formatted.length,
       metric,
       interval,
+      next_cursor: nextCursor,
+      has_more: hasMore,
       data: formatted,
       timestamp: Date.now(),
     });
