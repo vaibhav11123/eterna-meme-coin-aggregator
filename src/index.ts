@@ -25,6 +25,7 @@ app.use('/api', rateLimiter);
 app.use('/api', apiRoutes);
 app.use('/api/metrics', require('./routes/metrics.routes').default);
 app.use('/api/top', require('./routes/top.routes').default);
+app.use('/api', require('./routes/status.routes').default);
 
 // Debug routes (only in development)
 if (config.server.nodeEnv === 'development') {
@@ -40,6 +41,7 @@ app.get('/', (_req: express.Request, res: express.Response) => {
     version: '1.0.0',
     endpoints: {
       health: '/api/health',
+      status: '/api/status',
       tokens: '/api/tokens?addresses=So11111111111111111111111111111111111111112',
       search: '/api/search?query=pepe',
       top: '/api/top?metric=volume24h&limit=10',
@@ -51,6 +53,12 @@ app.get('/', (_req: express.Request, res: express.Response) => {
 
 // WebSocket
 const wsService = new WebSocketService(server);
+
+// Set WebSocket service reference for status endpoint
+const statusRoutes = require('./routes/status.routes');
+if (statusRoutes.setWebSocketService) {
+  statusRoutes.setWebSocketService(wsService);
+}
 
 // Graceful shutdown
 const shutdown = async () => {

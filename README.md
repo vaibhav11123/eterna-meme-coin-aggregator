@@ -2,6 +2,8 @@
 
 **Real-time aggregation of Solana meme coin data from multiple DEX sources** — DexScreener, GeckoTerminal, and Jupiter — with Redis caching and WebSocket live updates.
 
+> **Engineered for institutional-grade speed** — sub-200ms aggregated price delivery across live Solana DEX feeds.
+
 > *Eterna's aggregator merges 3 live DEX feeds under 200ms median latency using a Redis-backed caching layer.*
 
  **Live API:** https://eterna-aggregator.onrender.com  
@@ -301,6 +303,43 @@ Health check endpoint.
   "timestamp": 1234567890,
   "uptime": 3600
 }
+```
+
+#### GET `/api/status`
+Comprehensive service status and observability endpoint. Returns real-time metrics, cache performance, WebSocket connections, and system health.
+
+**Response:**
+```json
+{
+  "service": "Eterna Meme Coin Aggregator",
+  "version": "1.0.0",
+  "status": "healthy",
+  "uptime": "2h 15m",
+  "uptime_seconds": 8100,
+  "cache": {
+    "hits": 142,
+    "misses": 6,
+    "hit_rate": "95.93%",
+    "total_requests": 148
+  },
+  "performance": {
+    "avg_latency_ms": 45,
+    "requests_last_minute": 12,
+    "source_latencies": {
+      "dexscreener": 120,
+      "geckoterminal": 135
+    }
+  },
+  "websocket": {
+    "active_connections": 3
+  },
+  "timestamp": "2025-11-08T18:47:32.112Z"
+}
+```
+
+**Example:**
+```bash
+curl "http://localhost:3000/api/status"
 ```
 
 #### GET `/api/top`

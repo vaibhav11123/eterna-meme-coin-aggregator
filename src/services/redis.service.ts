@@ -1,13 +1,15 @@
 import Redis from 'ioredis';
+import { EventEmitter } from 'events';
 import { config } from '../config';
 import { logger } from '../utils/logger';
 
-class RedisService {
+class RedisService extends EventEmitter {
   private client: Redis;
   private subscriber: Redis;
   private publisher: Redis;
 
   constructor() {
+    super(); // Call EventEmitter constructor
     // Support REDIS_URL (connection string) or individual config
     const redisUrl = process.env.REDIS_URL;
     
@@ -58,14 +60,20 @@ class RedisService {
   async get<T>(key: string): Promise<T | null> {
     try {
       const value = await this.client.get(key);
-      if (!value) return null;
+      if (!value) {
+        this.emit('miss', key);
+        return null;
+      }
+      this.emit('hit', key);
       return JSON.parse(value) as T;
     } catch (error: any) {
       // Don't log errors if Redis is just not connected - it's expected in some setups
       if (error.message?.includes('ECONNREFUSED') || error.message?.includes('connect')) {
         logger.debug(`Redis not available for key ${key}, returning null`);
+        this.emit('miss', key);
       } else {
         logger.error(`Redis get error for key ${key}:`, error.message);
+        this.emit('miss', key);
       }
       return null;
     }
