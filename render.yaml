@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: eterna-aggregator
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: REDIS_HOST
+        fromDatabase:
+          name: eterna-redis
+          property: host
+      - key: REDIS_PORT
+        fromDatabase:
+          name: eterna-redis
+          property: port
+      - key: REDIS_PASSWORD
+        fromDatabase:
+          name: eterna-redis
+          property: password
+      - key: CACHE_TTL_SECONDS
+        value: 30
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: 100
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 60000
+
+databases:
+  - name: eterna-redis
+    plan: free
+    type: redis
+    region: oregon
+
