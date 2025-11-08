@@ -25,6 +25,6 @@ services:
 
 databases:
   - name: eterna-redis
+    databaseType: redis
     plan: free
     region: oregon
-    databaseType: redis
