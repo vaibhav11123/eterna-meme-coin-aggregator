@@ -11,6 +11,12 @@ services:
         value: production
       - key: PORT
         value: 10000
+      - key: CACHE_TTL_SECONDS
+        value: 30
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: 100
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 60000
       - key: REDIS_HOST
         fromDatabase:
           name: eterna-redis
@@ -23,16 +29,13 @@ services:
         fromDatabase:
           name: eterna-redis
           property: password
-      - key: CACHE_TTL_SECONDS
-        value: 30
-      - key: RATE_LIMIT_MAX_REQUESTS
-        value: 100
-      - key: RATE_LIMIT_WINDOW_MS
-        value: 60000
+      - key: REDIS_URL
+        fromDatabase:
+          name: eterna-redis
+          property: connectionString
 
 databases:
   - name: eterna-redis
     plan: free
     type: redis
     region: oregon
-
