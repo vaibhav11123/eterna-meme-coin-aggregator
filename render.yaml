@@ -1,3 +1,9 @@
+databases:
+  - name: eterna-redis
+    plan: free
+    region: oregon
+    databaseType: redis
+
 services:
   - type: web
     name: eterna-aggregator
@@ -22,9 +28,3 @@ services:
         fromDatabase:
           name: eterna-redis
           property: connectionString
-
-databases:
-  - name: eterna-redis
-    databaseType: redis
-    plan: free
-    region: oregon
