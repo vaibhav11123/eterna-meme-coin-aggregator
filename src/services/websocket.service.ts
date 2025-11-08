@@ -57,7 +57,7 @@ export class WebSocketService {
         try {
           const data = JSON.parse(message.toString());
           await this.handleMessage(clientId, data);
-        } catch (error) {
+        } catch (error: unknown) {
           logger.error('WebSocket message error:', error);
           this.sendError(ws, 'Invalid message format');
         }
