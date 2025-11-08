@@ -8,16 +8,26 @@ class RedisService {
   private publisher: Redis;
 
   constructor() {
-    const redisConfig = {
-      host: config.redis.host,
-      port: config.redis.port,
-      password: config.redis.password,
-      db: config.redis.db,
-      retryStrategy: (times: number) => {
-        const delay = Math.min(times * 50, 2000);
-        return delay;
-      },
-    };
+    // Support REDIS_URL (connection string) or individual config
+    const redisUrl = process.env.REDIS_URL;
+    
+    let redisConfig: any;
+    if (redisUrl) {
+      // Use connection string (Render, Heroku, etc.)
+      redisConfig = redisUrl;
+    } else {
+      // Use individual config
+      redisConfig = {
+        host: config.redis.host,
+        port: config.redis.port,
+        password: config.redis.password,
+        db: config.redis.db,
+        retryStrategy: (times: number) => {
+          const delay = Math.min(times * 50, 2000);
+          return delay;
+        },
+      };
+    }
 
     this.client = new Redis(redisConfig);
     this.subscriber = new Redis(redisConfig);
