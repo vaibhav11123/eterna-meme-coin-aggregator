@@ -4,6 +4,7 @@ services:
     plan: free
     region: oregon
     maxmemoryPolicy: allkeys-lfu
+    ipAllowList: []
 
   - type: web
     name: eterna-aggregator
