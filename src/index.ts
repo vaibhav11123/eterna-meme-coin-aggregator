@@ -34,7 +34,7 @@ if (config.server.nodeEnv === 'development') {
 }
 
 // Root endpoint
-app.get('/', (_req, res) => {
+app.get('/', (_req: express.Request, res: express.Response) => {
   res.json({
     name: 'Eterna Meme Coin Aggregator',
     version: '1.0.0',
@@ -84,11 +84,11 @@ server.listen(PORT, () => {
 });
 
 // Error handling
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', (reason: unknown, promise: Promise<any>) => {
   logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
 
-process.on('uncaughtException', (error) => {
+process.on('uncaughtException', (error: Error) => {
   logger.error('Uncaught Exception:', error);
   process.exit(1);
 });

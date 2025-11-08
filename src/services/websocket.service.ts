@@ -68,7 +68,7 @@ export class WebSocketService {
         this.clients.delete(clientId);
       });
 
-      ws.on('error', (error) => {
+      ws.on('error', (error: Error) => {
         logger.error(`WebSocket error for client ${clientId}:`, error);
         this.clients.delete(clientId);
       });
