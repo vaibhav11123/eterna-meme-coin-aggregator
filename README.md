@@ -1,31 +1,31 @@
-# 🚀 Eterna Meme Coin Aggregator
+#  Eterna Meme Coin Aggregator
 
 **Real-time aggregation of Solana meme coin data from multiple DEX sources** — DexScreener, GeckoTerminal, and Jupiter — with Redis caching and WebSocket live updates.
 
 > *Eterna's aggregator merges 3 live DEX feeds under 200ms median latency using a Redis-backed caching layer.*
 
-🔗 **Live API:** https://eterna-aggregator.onrender.com  
-📺 **Demo Video:** (Add your YouTube link here)  
-🧠 **Tech:** Node.js • TypeScript • Redis • WebSockets • Docker
+ **Live API:** https://eterna-aggregator.onrender.com  
+ **Demo Video:** (Add your YouTube link here)  
+ **Tech:** Node.js • TypeScript • Redis • WebSockets • Docker
 
-## ✨ Key Features
+##  Key Features
 
-- 🔄 **Real-time Updates**: WebSocket support for live price updates (30s refresh)
-- 📊 **Multi-Source Aggregation**: Combines data from DexScreener, GeckoTerminal, and Jupiter
-- ⚡ **Redis Caching**: Sub-100ms response times with 30s TTL caching
-- 🚦 **Rate Limiting**: Built-in rate limiting with exponential backoff
-- 📈 **Metrics & Observability**: Built-in metrics endpoint for performance monitoring
-- 🐳 **Docker Support**: One-command deployment with Docker Compose
-- ✅ **Type-Safe**: Full TypeScript implementation with strict types
-- 🧪 **Tested**: Comprehensive test suite with CI/CD integration
-- 🎬 **Cinematic Demos**: Professional terminal clients for showcasing
+-  **Real-time Updates**: WebSocket support for live price updates (30s refresh)
+-  **Multi-Source Aggregation**: Combines data from DexScreener, GeckoTerminal, and Jupiter
+-  **Redis Caching**: Sub-100ms response times with 30s TTL caching
+-  **Rate Limiting**: Built-in rate limiting with exponential backoff
+-  **Metrics & Observability**: Built-in metrics endpoint for performance monitoring
+-  **Docker Support**: One-command deployment with Docker Compose
+-  **Type-Safe**: Full TypeScript implementation with strict types
+-  **Tested**: Comprehensive test suite with CI/CD integration
+-  **Cinematic Demos**: Professional terminal clients for showcasing
 
-## 🏗️ System Architecture
+##  System Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Client Applications                       │
-│  (Web Frontend / Mobile / Terminal Clients / WebSocket)    │
+│                    Client Applications                      │
+│  (Web Frontend / Mobile / Terminal Clients / WebSocket)     │
 └────────────────────┬────────────────────────────────────────┘
                      │
          ┌───────────┴───────────┐
@@ -33,7 +33,7 @@
     HTTP REST API          WebSocket (ws://)
          │                       │
 ┌────────▼────────┐    ┌─────────▼─────────┐
-│  Express Server │    │  WebSocket Server  │
+│  Express Server │    │  WebSocket Server │
 │  (Port 3000)    │    │  (Real-time Push) │
 └────────┬────────┘    └─────────┬─────────┘
          │                       │
@@ -47,9 +47,9 @@
     ┌────────────────┼────────────────┐
     │                │                │
 ┌───▼────┐    ┌──────▼──────┐  ┌─────▼─────┐
-│DexScreener│  │GeckoTerminal│  │  Jupiter  │
-│   API     │  │    API      │  │   API     │
-└──────────┘  └──────────────┘  └───────────┘
+│DexScreener│ │GeckoTerminal│  │  Jupiter  │
+│   API     │ │    API      │  │   API     │
+└──────────┘  └──────────────┘ └───────────┘
     │                │                │
     └────────────────┼────────────────┘
                      │
@@ -139,9 +139,9 @@ DexScreener Data:        GeckoTerminal Data:      Jupiter Data:
                     │ Volume: $1.8M      │ (sum)
                     │ Liquidity: $950K   │ (sum)
                     │ Sources: [dex,     │
-                    │         gecko,    │
-                    │         jupiter]  │
-                    │ Confidence: 98.5% │ (price spread)
+                    │         gecko,     │
+                    │         jupiter]   │
+                    │ Confidence: 98.5%  │ (price spread)
                     └────────────────────┘
                                  ↓
                     Cache in Redis (30s)
@@ -452,12 +452,12 @@ npm run test:watch
 ```
 
 **Test Coverage:**
-- ✅ API client tests (DexScreener, GeckoTerminal, Jupiter)
-- ✅ Aggregator service tests (merging logic)
-- ✅ Cache TTL tests
-- ✅ Rate limiting tests
-- ✅ Metrics collection tests
-- ✅ API route tests
+-  API client tests (DexScreener, GeckoTerminal, Jupiter)
+-  Aggregator service tests (merging logic)
+-  Cache TTL tests
+-  Rate limiting tests
+-  Metrics collection tests
+-  API route tests
 
 **CI/CD:** Tests run automatically on push via GitHub Actions
 
