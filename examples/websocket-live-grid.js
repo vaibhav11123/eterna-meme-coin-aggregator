@@ -316,8 +316,6 @@ ws.on('error', (err) => {
   }
   process.exit(1);
 });
-<｜tool▁calls▁begin｜><｜tool▁call▁begin｜>
-run_terminal_cmd
 
 // Initial render
 renderDashboard();
