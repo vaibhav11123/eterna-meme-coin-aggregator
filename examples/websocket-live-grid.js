@@ -12,6 +12,7 @@
 const WebSocket = require('ws');
 const chalk = require('chalk');
 const Table = require('cli-table3');
+const https = require('https');
 
 const WS_URL = process.env.WS_URL || 'wss://eterna-aggregator.onrender.com/ws';
 
