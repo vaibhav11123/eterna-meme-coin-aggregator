@@ -2,10 +2,28 @@
 
 # 🧪 WebSocket Connection Test
 # Tests WebSocket connectivity and message flow
+# 
+# IMPORTANT: This script warms the cache first to ensure data is available
 
 set -e
 
+API_URL="${API_URL:-https://eterna-aggregator.onrender.com}"
 WS_URL="${WS_URL:-wss://eterna-aggregator.onrender.com/ws}"
+
+# Warm up cache first (critical for WebSocket to receive data)
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🔥 Warming up cache before WebSocket test..."
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+SOL="So11111111111111111111111111111111111111112"
+USDC="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+
+echo "Fetching tokens to populate cache..."
+curl -s "$API_URL/api/tokens?addresses=$SOL,$USDC" > /dev/null 2>&1
+echo "✓ Cache warmed"
+echo ""
+sleep 1
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "🧪 WEBSOCKET CONNECTION TEST"

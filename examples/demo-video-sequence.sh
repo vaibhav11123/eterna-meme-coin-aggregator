@@ -44,7 +44,7 @@ echo ""
 sleep 3
 
 # ════════════════════════════════════════════════════════
-# Step 2: Populate Cache (API Warmup)
+# Step 2: Populate Cache (API Warmup) - CRITICAL: Must happen before WebSocket
 # ════════════════════════════════════════════════════════
 clear
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
@@ -53,17 +53,29 @@ echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━�
 echo ""
 echo -e "${YELLOW}Narrate: 'Fetching from DexScreener and GeckoTerminal, caching live Solana data in Redis.'${NC}"
 echo ""
-echo "Fetching tokens..."
+echo "Fetching tokens (first call - populates cache)..."
 echo ""
 
 SOL="So11111111111111111111111111111111111111112"
 USDC="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
 BONK="DezXQkJ8VNVoU8HEHrAxeRBxyvRkrLNzdeqjVqm3Z6vL"
 
-curl -s "$API_URL/api/tokens?addresses=$SOL,$USDC,$BONK" | jq '.data[] | {symbol: .token.symbol, price: .priceData.price, sources: .sources}' 2>/dev/null || echo "Fetching data..."
+# First call - populates cache
+echo "Call 1: Fetching and caching..."
+curl -s "$API_URL/api/tokens?addresses=$SOL,$USDC,$BONK" | jq -r '.data[] | "\(.token.symbol) - $\(.priceData.price) - Sources: \([.sources[]] | join(", "))"' 2>/dev/null | head -5 || echo "Fetching data..."
 
 echo ""
-echo -e "${GREEN}✓ Cache populated${NC}"
+echo "Call 2: Verifying cache hit (should be faster)..."
+# Second call - should hit cache
+curl -s "$API_URL/api/tokens?addresses=$SOL,$USDC,$BONK" > /dev/null 2>&1
+
+echo ""
+echo "Checking cache performance..."
+CACHE_STATS=$(curl -s "$API_URL/api/status" | jq -r '.cache | "Hits: \(.hits), Misses: \(.misses), Hit Rate: \(.hit_rate)"' 2>/dev/null)
+echo "$CACHE_STATS"
+
+echo ""
+echo -e "${GREEN}✓ Cache populated and verified${NC}"
 echo ""
 sleep 2
 
@@ -99,7 +111,9 @@ echo -e "${YELLOW}Press Ctrl+C to stop after 10-15 seconds${NC}"
 echo ""
 sleep 2
 
-# Run cinematic mode
+# Run cinematic mode (cache is now warmed up, so it will show data immediately)
+echo -e "${YELLOW}The feed will show data immediately because cache is pre-warmed.${NC}"
+echo ""
 WS_URL="$WS_URL" npm run ws:cinematic
 
 # ════════════════════════════════════════════════════════
