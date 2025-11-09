@@ -87,14 +87,20 @@ function renderDashboard() {
   console.log('');
 
   // Table
+  // ════════════════════════════════════════════════════════
+  // EXPLICIT LABEL: Column descriptions
+  // ════════════════════════════════════════════════════════
+  console.log(chalk.yellow("📊 REAL-TIME PRICE FEED — Aggregated Market Data"));
+  console.log(chalk.dim("Columns: PRICE (latest USD) | VOLUME (24h trading) | LIQUIDITY (pool size) | CONFIDENCE (cross-source accuracy) | DATA SOURCES (active feeds)\n"));
+  
   const table = new Table({
     head: [
-      chalk.gray('TOKEN'),
+      chalk.gray('TOKEN (Name)'),
       chalk.gray('PRICE (USD)'),
-      chalk.gray('VOL (24H)'),
-      chalk.gray('LIQ.'),
-      chalk.gray('CONF.'),
-      chalk.gray('SRC'),
+      chalk.gray('VOLUME (24H)'),
+      chalk.gray('LIQUIDITY ($)'),
+      chalk.gray('CONFIDENCE (%)'),
+      chalk.gray('DATA SOURCES'),
     ],
     colWidths: [18, 14, 14, 12, 10, 20],
     style: {
@@ -172,16 +178,20 @@ function renderDashboard() {
 
   console.log(table.toString());
 
-  // Footer
+  // ════════════════════════════════════════════════════════
+  // EXPLICIT LABEL: System status and update info
+  // ════════════════════════════════════════════════════════
   console.log(chalk.gray('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
+  const updateTime = new Date().toLocaleTimeString();
   console.log(
-    chalk.gray(
-      `📡  Updates: ${updateCount}   |   Active Tokens: ${tokenData.size}   |   ⏱  ${new Date().toLocaleTimeString()}`
-    )
+    chalk.cyan(`📡 LIVE UPDATE #${updateCount} at ${updateTime}`) + 
+    chalk.dim(` | ${tokenData.size} tokens active | WebSocket streaming`)
   );
   console.log(chalk.gray('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
   console.log(chalk.dim('──────────────────────────────────────────────────────────────────────────────'));
-  console.log(chalk.dim('Powered by Eterna • Real-time Market Intelligence Engine • v1.0'));
+  console.log(chalk.dim('🎯 ETERNA — Engineered for institutional-grade speed'));
+  console.log(chalk.dim('   Delivering sub-200ms aggregated price intelligence across Solana DEX feeds'));
+  console.log(chalk.dim('   Powered by Redis caching + WebSocket streaming • v1.0'));
   console.log(chalk.dim('──────────────────────────────────────────────────────────────────────────────'));
 }
 
