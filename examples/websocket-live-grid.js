@@ -290,15 +290,34 @@ ws.on('close', () => {
 });
 
 ws.on('error', (err) => {
-  const errorMsg = err.message || err.toString() || 'Unknown error';
-  console.error(chalk.red(`\nWebSocket error: ${errorMsg}`));
-  console.log(chalk.yellow('\nTroubleshooting:'));
-  console.log(chalk.yellow('  1. Make sure the server is running'));
-  console.log(chalk.yellow('  2. Check your internet connection'));
-  console.log(chalk.yellow('  3. Try warming the cache first:'));
-  console.log(chalk.yellow('     curl -s "https://eterna-aggregator.onrender.com/api/tokens?addresses=So11111111111111111111111111111111111111112" > /dev/null'));
+  let errorMsg = err.message || err.toString() || 'Unknown error';
+  
+  // Handle AggregateError (DNS/connection issues)
+  if (err.name === 'AggregateError' || errorMsg.includes('AggregateError')) {
+    errorMsg = 'Connection failed - DNS resolution error or server unreachable';
+    console.error(chalk.red(`\nWebSocket error: ${errorMsg}`));
+    console.log(chalk.yellow('\nThis usually means:'));
+    console.log(chalk.yellow('  • The server might be down or spinning up (Render free tier)'));
+    console.log(chalk.yellow('  • DNS resolution failed'));
+    console.log(chalk.yellow('  • Network connectivity issue'));
+    console.log(chalk.yellow('\nTry:'));
+    console.log(chalk.yellow('  1. Wait 30-60 seconds (Render free tier cold start)'));
+    console.log(chalk.yellow('  2. Check if API is accessible:'));
+    console.log(chalk.cyan('     curl -s "https://eterna-aggregator.onrender.com/api/health"'));
+    console.log(chalk.yellow('  3. If API works, try WebSocket again'));
+    console.log(chalk.yellow('  4. Use simple demo instead: npm run ws:simple'));
+  } else {
+    console.error(chalk.red(`\nWebSocket error: ${errorMsg}`));
+    console.log(chalk.yellow('\nTroubleshooting:'));
+    console.log(chalk.yellow('  1. Make sure the server is running'));
+    console.log(chalk.yellow('  2. Check your internet connection'));
+    console.log(chalk.yellow('  3. Try warming the cache first:'));
+    console.log(chalk.yellow('     curl -s "https://eterna-aggregator.onrender.com/api/tokens?addresses=So11111111111111111111111111111111111111112" > /dev/null'));
+  }
   process.exit(1);
 });
+<｜tool▁calls▁begin｜><｜tool▁call▁begin｜>
+run_terminal_cmd
 
 // Initial render
 renderDashboard();
