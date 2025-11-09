@@ -101,7 +101,8 @@ fi
 echo ""
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
-sleep 3
+echo -e "${YELLOW}Press Enter to continue to next scene...${NC}"
+read
 clear
 
 # ════════════════════════════════════════════════════════
@@ -148,7 +149,8 @@ fi
 echo ""
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
-sleep 3
+echo -e "${YELLOW}Press Enter to continue to next scene...${NC}"
+read
 clear
 
 # ════════════════════════════════════════════════════════
@@ -252,7 +254,8 @@ echo -e "${DIM}   • All data served from Redis cache (< 50ms)${NC}"
 echo ""
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
-sleep 3
+echo -e "${YELLOW}Press Enter to continue to next scene...${NC}"
+read
 clear
 
 # ════════════════════════════════════════════════════════
@@ -295,7 +298,8 @@ fi
 echo ""
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
-sleep 3
+echo -e "${YELLOW}Press Enter to continue to next scene...${NC}"
+read
 clear
 
 # ════════════════════════════════════════════════════════
@@ -374,4 +378,9 @@ echo ""
 echo -e "${DIM}Live API: ${API_URL}${NC}"
 echo -e "${DIM}GitHub: https://github.com/vaibhav11123/eterna-meme-coin-aggregator${NC}"
 echo ""
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
+echo -e "${GREEN}✅ Demo complete! Press Enter to exit...${NC}"
+read
+clear
 
