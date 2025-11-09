@@ -260,11 +260,11 @@ Get aggregated token data for specific addresses with cursor-based pagination an
 
 **Example:**
 ```bash
-# First page
-curl "http://localhost:3000/api/tokens?addresses=0x123,0x456&limit=20&interval=24h"
+# Real Solana token addresses
+curl "http://localhost:3000/api/tokens?addresses=So11111111111111111111111111111111111111112,EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&limit=20&interval=24h"
 
 # Next page using cursor
-curl "http://localhost:3000/api/tokens?addresses=0x123,0x456&limit=20&cursor=eyJpbmRleCI6MjB9"
+curl "http://localhost:3000/api/tokens?addresses=So11111111111111111111111111111111111111112&limit=20&cursor=eyJpbmRleCI6MjB9"
 ```
 
 **Response:**
@@ -313,6 +313,37 @@ Search for tokens by name or symbol with cursor-based pagination and time period
 **Example:**
 ```bash
 curl "http://localhost:3000/api/search?query=pepe&limit=20&interval=1h"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "token": {
+        "address": "0x123",
+        "symbol": "PEPE",
+        "name": "Pepe Token"
+      },
+      "priceData": {
+        "price": 0.001,
+        "priceChange24h": 5.2,
+        "volume24h": 1000000,
+        "liquidity": 500000
+      },
+      "sources": ["dexscreener", "geckoterminal"],
+      "chains": ["solana"],
+      "lastUpdated": 1234567890
+    }
+  ],
+  "count": 1,
+  "next_cursor": "eyJpbmRleCI6MjB9",
+  "has_more": true,
+  "query": "pepe",
+  "interval": "1h",
+  "timestamp": 1234567890
+}
 ```
 
 #### GET `/api/health`
@@ -458,7 +489,9 @@ Clear all cached data (use with caution).
 
 ### WebSocket API
 
-Connect to `ws://localhost:3000/ws` for real-time updates.
+Connect to `ws://localhost:3000/ws` for real-time updates (or `wss://` for production).
+
+**Production:** `wss://eterna-aggregator.onrender.com/ws`
 
 #### Messages
 
@@ -512,6 +545,15 @@ Connect to `ws://localhost:3000/ws` for real-time updates.
 }
 ```
 
+**Subscribed (confirmation):**
+```json
+{
+  "type": "subscribed",
+  "tokenAddresses": ["0x123", "0x456"],
+  "timestamp": 1234567890
+}
+```
+
 **Pong:**
 ```json
 {
@@ -520,16 +562,50 @@ Connect to `ws://localhost:3000/ws` for real-time updates.
 }
 ```
 
+**Error:**
+```json
+{
+  "type": "error",
+  "message": "Invalid message format",
+  "timestamp": 1234567890
+}
+```
+
 ## Configuration
 
-Environment variables (see `.env.example`):
+### Environment Variables
 
+Create a `.env` file in the project root (see `ENV_SETUP.md` for detailed guide):
+
+**Server Configuration:**
 - `PORT`: Server port (default: 3000)
+- `NODE_ENV`: Environment mode - `development` | `production` (default: development)
+
+**Redis Configuration:**
 - `REDIS_HOST`: Redis host (default: localhost)
 - `REDIS_PORT`: Redis port (default: 6379)
+- `REDIS_PASSWORD`: Redis password (optional)
+- `REDIS_DB`: Redis database number (default: 0)
+- `REDIS_URL`: Full Redis connection string (for cloud deployments, overrides host/port/password)
+
+**Cache Configuration:**
 - `CACHE_TTL_SECONDS`: Cache TTL in seconds (default: 30)
+- `CACHE_KEY_PREFIX`: Cache key prefix (default: `meme_coin:`)
+
+**Rate Limiting:**
 - `RATE_LIMIT_MAX_REQUESTS`: Max requests per window (default: 100)
 - `RATE_LIMIT_WINDOW_MS`: Rate limit window in milliseconds (default: 60000)
+
+**API Configuration:**
+- `DEXSCREENER_BASE_URL`: DexScreener API base URL (default: https://api.dexscreener.com/latest/dex)
+- `DEXSCREENER_RATE_LIMIT_PER_MINUTE`: DexScreener rate limit (default: 60)
+- `GECKO_BASE_URL`: GeckoTerminal API base URL (default: https://api.geckoterminal.com/api/v2/networks/solana)
+- `GECKOTERMINAL_RATE_LIMIT_PER_MINUTE`: GeckoTerminal rate limit (default: 60)
+- `JUPITER_BASE_URL`: Jupiter API base URL (default: https://price.jup.ag/v4)
+
+**WebSocket Configuration:**
+- `WS_HEARTBEAT_INTERVAL_MS`: WebSocket heartbeat interval (default: 30000)
+- `WS_MAX_CONNECTIONS`: Maximum WebSocket connections (default: 1000)
 
 ## 🧪 Testing
 
@@ -613,6 +689,22 @@ The API implements rate limiting using Redis:
 - Headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`
 - Status: 429 Too Many Requests when exceeded
 
+**Rate Limit Response Example:**
+```json
+{
+  "error": "Too many requests",
+  "message": "Rate limit exceeded. Please try again later.",
+  "retryAfter": 45
+}
+```
+
+**Response Headers:**
+```
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 1638360000
+```
+
 ## Caching Strategy
 
 - **Cache TTL**: 30 seconds (configurable)
@@ -629,6 +721,54 @@ The API implements rate limiting using Redis:
 - API errors return appropriate HTTP status codes
 - WebSocket errors send error messages to clients
 - Graceful degradation if one data source fails
+
+### Error Response Format
+
+**400 Bad Request:**
+```json
+{
+  "error": "Invalid addresses parameter",
+  "details": [
+    {
+      "path": ["addresses"],
+      "message": "Expected array, received string"
+    }
+  ]
+}
+```
+
+**404 Not Found:**
+```json
+{
+  "error": "Token not found",
+  "message": "No data available for the provided token addresses"
+}
+```
+
+**429 Too Many Requests:**
+```json
+{
+  "error": "Too many requests",
+  "message": "Rate limit exceeded. Please try again later.",
+  "retryAfter": 45
+}
+```
+
+**500 Internal Server Error:**
+```json
+{
+  "error": "Internal server error",
+  "message": "Failed to fetch token data"
+}
+```
+
+**503 Service Unavailable:**
+```json
+{
+  "success": false,
+  "error": "Redis not available"
+}
+```
 
 ## Performance
 
@@ -648,6 +788,76 @@ MIT
 3. Make your changes
 4. Add tests
 5. Submit a pull request
+
+## 🚀 Deployment
+
+### Render.com Deployment
+
+The project includes a `render.yaml` file for easy deployment to Render. See [RENDER_DEPLOY.md](./RENDER_DEPLOY.md) for detailed instructions.
+
+**Quick Deploy:**
+1. Push your code to GitHub
+2. Connect your repository to Render
+3. Render will automatically detect `render.yaml` and deploy
+
+### Docker Deployment
+
+```bash
+# Build and run with Docker Compose
+docker-compose up -d
+
+# Or build Docker image manually
+docker build -t eterna-aggregator .
+docker run -p 3000:3000 --env-file .env eterna-aggregator
+```
+
+## 📚 Additional Documentation
+
+- **[ENV_SETUP.md](./ENV_SETUP.md)** - Detailed environment variable setup guide
+- **[RENDER_DEPLOY.md](./RENDER_DEPLOY.md)** - Step-by-step Render deployment guide
+- **[RENDER_TROUBLESHOOTING.md](./RENDER_TROUBLESHOOTING.md)** - Common deployment issues and solutions
+- **[WEBSOCKET_DEMO.md](./WEBSOCKET_DEMO.md)** - WebSocket client examples and usage
+- **[TOP_MOVERS_GUIDE.md](./TOP_MOVERS_GUIDE.md)** - Top Movers endpoint guide
+- **[DEBUGGING.md](./DEBUGGING.md)** - Debugging tips and tools
+- **[TROUBLESHOOTING_403.md](./TROUBLESHOOTING_403.md)** - Fixing 403 API errors
+
+## 🧰 API Testing
+
+### Postman Collection
+
+Import the included Postman collection for easy API testing:
+- **File:** `Eterna_Aggregator.postman_collection.json`
+- **Import:** Open Postman → Import → Select the JSON file
+- **Environment:** Update the `baseUrl` variable to your server URL
+
+The collection includes:
+- All REST API endpoints
+- Pre-configured requests with examples
+- Environment variables for easy switching between local/production
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**Redis Connection Failed:**
+- Ensure Redis is running: `redis-cli ping` should return `PONG`
+- Check `REDIS_HOST` and `REDIS_PORT` environment variables
+- For cloud deployments, verify `REDIS_URL` is set correctly
+
+**403 Forbidden from APIs:**
+- Some APIs may block requests from certain networks/VPNs
+- See [TROUBLESHOOTING_403.md](./TROUBLESHOOTING_403.md) for solutions
+- Check firewall/VPN settings
+
+**WebSocket Connection Issues:**
+- Use `wss://` (secure) for production, `ws://` for local development
+- Check that the server is running and WebSocket path is `/ws`
+- Verify no firewall is blocking WebSocket connections
+
+**Rate Limiting:**
+- Check rate limit headers in response
+- Implement exponential backoff in your client
+- Consider increasing `RATE_LIMIT_MAX_REQUESTS` if needed
 
 ## Support
 
