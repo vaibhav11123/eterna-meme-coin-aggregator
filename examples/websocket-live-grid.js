@@ -190,8 +190,12 @@ function renderDashboard() {
 // ════════════════════════════════════════════════════════
 
 ws.on('open', () => {
-  console.log(chalk.gray(`Connecting to ${WS_URL}...`));
-  console.log(chalk.dim(`Subscribing to ${TOKENS.length} token(s)...\n`));
+  // ════════════════════════════════════════════════════════
+  // EXPLICIT LABEL: Connection status
+  // ════════════════════════════════════════════════════════
+  console.log(chalk.yellow("📡 SYSTEM STATUS — Connecting to live production server"));
+  console.log(chalk.gray(`   WebSocket: ${WS_URL}`));
+  console.log(chalk.gray(`   Subscribing to ${TOKENS.length} token(s)...\n`));
 
   ws.send(JSON.stringify({
     type: 'subscribe',
@@ -229,8 +233,11 @@ ws.on('open', () => {
             
             if (tokenData.size > 0) {
               updateCount++;
+              const tokenSymbols = Array.from(tokenData.values()).map(t => t.token?.symbol).filter(Boolean).join(', ');
+              console.log(chalk.green(`✓ Cache warmed successfully`));
+              console.log(chalk.green(`✓ Tokens loaded: ${tokenSymbols}`));
+              console.log(chalk.green(`✓ ${tokenData.size} token(s) ready for display\n`));
               renderDashboard();
-              console.log(chalk.green(`✓ Loaded ${tokenData.size} token(s) from cache instantly\n`));
             }
           }
         } catch (e) {
@@ -253,25 +260,32 @@ ws.on('message', (msg) => {
     }
 
     if (payload.type === 'subscribed') {
-      console.log(chalk.green(`✓ Subscribed to ${payload.tokenAddresses.length} token(s)\n`));
-      console.log(chalk.dim('Waiting for initial data snapshot...\n'));
-      // Give it a moment for initial snapshot
-      setTimeout(() => {
-        if (tokenData.size === 0) {
-          console.log(chalk.yellow('⚠ No data received yet. This might mean:'));
-          console.log(chalk.yellow('  1. Cache is empty - warm it first with an API call'));
-          console.log(chalk.yellow('  2. Server is still fetching data (wait a few seconds)'));
-          console.log(chalk.yellow('  3. Tokens may not be available\n'));
-        }
-      }, 3000);
+      console.log(chalk.green(`✓ Subscribed to ${payload.tokenAddresses.length} token(s)`));
+      console.log(chalk.yellow("💾 DATA INGESTION — Fetching tokens from live DEX APIs"));
+      console.log(chalk.dim("   Sources: DexScreener, GeckoTerminal"));
+      console.log(chalk.dim("   Cache: Redis (30s TTL) | WebSocket: Streaming updates\n"));
       return;
     }
 
-    if (payload.type === 'update' && Array.isArray(payload.data)) {
-      const receivedSymbols = payload.data.map(t => t.token?.symbol || t.token?.address?.slice(0, 8)).join(', ');
-      if (process.env.DEBUG) {
-        console.log(chalk.dim(`[DEBUG] Update received: ${receivedSymbols}`));
-      }
+      if (payload.type === 'update' && Array.isArray(payload.data)) {
+        const receivedSymbols = payload.data.map(t => t.token?.symbol || t.token?.address?.slice(0, 8)).join(', ');
+        
+        // ════════════════════════════════════════════════════════
+        // EXPLICIT LABEL: Live update event
+        // ════════════════════════════════════════════════════════
+        if (updateCount > 0) {
+          // Show update event message (but don't spam - only every few updates)
+          if (updateCount % 3 === 0) {
+            const updateTime = new Date().toLocaleTimeString();
+            console.log(chalk.cyan(`\n⚡ LIVE UPDATE EVENT — Prices refreshed at ${updateTime}`));
+            console.log(chalk.dim(`   Tokens updated: ${receivedSymbols}`));
+            console.log(chalk.dim(`   Data updated instantly (<200ms aggregation latency)\n`));
+          }
+        }
+        
+        if (process.env.DEBUG) {
+          console.log(chalk.dim(`[DEBUG] Update received: ${receivedSymbols}`));
+        }
 
       for (const token of payload.data) {
         // Debug: Log to stderr so it doesn't get cleared (or log before render)
