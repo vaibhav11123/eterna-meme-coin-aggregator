@@ -18,7 +18,7 @@ const boxen = require('boxen');
 const readline = require('readline');
 const ansiEscapes = require('ansi-escapes');
 
-const WS_URL = process.env.WS_URL || 'ws://localhost:3000/ws';
+const WS_URL = process.env.WS_URL || 'wss://eterna-aggregator.onrender.com/ws';
 
 // Default tokens: SOL, BONK, USDC
 const TOKENS = process.argv.length >= 5
