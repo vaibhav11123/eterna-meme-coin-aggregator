@@ -29,16 +29,28 @@ USDC="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
 BONK="DezXQkJ8VNVoU8HEHrAxeRBxyvRkrLNzdeqjVqm3Z6vL"
 
 echo "Fetching tokens (populating cache)..."
-curl -s "$API_URL/api/tokens?addresses=$SOL,$USDC,$BONK" | jq -r '.data[] | "  ✓ \(.token.symbol) - $\(.priceData.price) - Sources: \([.sources[]] | join(", "))"' 2>/dev/null | head -3
+echo "  (This may take 10-15 seconds on first call due to cold start...)"
+RESPONSE=$(curl -s --max-time 30 "$API_URL/api/tokens?addresses=$SOL,$USDC,$BONK" 2>&1)
 
+if [ $? -eq 0 ] && echo "$RESPONSE" | jq -e '.data' > /dev/null 2>&1; then
+    echo "$RESPONSE" | jq -r '.data[] | "  ✓ \(.token.symbol) - $\(.priceData.price) - Sources: \([.sources[]] | join(", "))"' 2>/dev/null | head -3
+    echo ""
+    echo "Verifying cache (second call should be faster)..."
+    curl -s --max-time 15 "$API_URL/api/tokens?addresses=$SOL,$USDC,$BONK" > /dev/null 2>&1
+    
+    CACHE_INFO=$(curl -s --max-time 10 "$API_URL/api/status" | jq -r '.cache | "Hit Rate: \(.hit_rate) (Hits: \(.hits), Misses: \(.misses))"' 2>/dev/null)
+    if [ -n "$CACHE_INFO" ]; then
+        echo -e "${GREEN}✓ Cache ready: $CACHE_INFO${NC}"
+    else
+        echo -e "${YELLOW}⚠ Cache status unavailable, but proceeding...${NC}"
+    fi
+else
+    echo -e "${YELLOW}⚠ API call failed or timed out. This might be a cold start.${NC}"
+    echo -e "${YELLOW}   The WebSocket will still work, but may take longer to show data.${NC}"
+    echo -e "${YELLOW}   Continuing anyway...${NC}"
+fi
 echo ""
-echo "Verifying cache (second call should be faster)..."
-curl -s "$API_URL/api/tokens?addresses=$SOL,$USDC,$BONK" > /dev/null 2>&1
-
-CACHE_INFO=$(curl -s "$API_URL/api/status" | jq -r '.cache | "Hit Rate: \(.hit_rate) (Hits: \(.hits), Misses: \(.misses))"' 2>/dev/null)
-echo -e "${GREEN}✓ Cache ready: $CACHE_INFO${NC}"
-echo ""
-sleep 1
+sleep 2
 
 # Step 2: Launch cinematic
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
