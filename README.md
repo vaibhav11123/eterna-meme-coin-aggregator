@@ -7,7 +7,7 @@
 > *Eterna's aggregator merges 3 live DEX feeds under 200ms median latency using a Redis-backed caching layer.*
 
  **Live API:** https://eterna-aggregator.onrender.com  
- **Demo Video:** ((https://youtu.be/G21dH75YuZU))  
+ **Demo Video:** https://youtu.be/G21dH75YuZU  
  **Tech:** Node.js • TypeScript • Redis • WebSockets • Docker
 
 ##  Key Features
