@@ -8,6 +8,10 @@ import { redisService } from './services/redis.service';
 import { WebSocketService } from './services/websocket.service';
 import { rateLimiter } from './middleware/rateLimiter';
 import apiRoutes from './routes/api.routes';
+import metricsRoutes from './routes/metrics.routes';
+import topRoutes from './routes/top.routes';
+import statusRoutes, { setWebSocketService } from './routes/status.routes';
+import debugRoutes from './routes/debug.routes';
 
 const app = express();
 const server = createServer(app);
@@ -23,13 +27,12 @@ app.use('/api', rateLimiter);
 
 // Routes
 app.use('/api', apiRoutes);
-app.use('/api/metrics', require('./routes/metrics.routes').default);
-app.use('/api/top', require('./routes/top.routes').default);
-app.use('/api', require('./routes/status.routes').default);
+app.use('/api/metrics', metricsRoutes);
+app.use('/api/top', topRoutes);
+app.use('/api', statusRoutes);
 
 // Debug routes (only in development)
 if (config.server.nodeEnv === 'development') {
-  const debugRoutes = require('./routes/debug.routes').default;
   app.use('/debug', debugRoutes);
   logger.info('Debug routes enabled at /debug');
 }
@@ -55,10 +58,7 @@ app.get('/', (_req: express.Request, res: express.Response) => {
 const wsService = new WebSocketService(server);
 
 // Set WebSocket service reference for status endpoint
-const statusRoutes = require('./routes/status.routes');
-if (statusRoutes.setWebSocketService) {
-  statusRoutes.setWebSocketService(wsService);
-}
+setWebSocketService(wsService);
 
 // Graceful shutdown
 const shutdown = async () => {
@@ -92,7 +92,7 @@ server.listen(PORT, () => {
 });
 
 // Error handling
-process.on('unhandledRejection', (reason: unknown, promise: Promise<any>) => {
+process.on('unhandledRejection', (reason: unknown, promise: Promise<unknown>) => {
   logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
 

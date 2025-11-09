@@ -104,17 +104,20 @@ export class GeckoTerminalClient {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
           }
           
-        } catch (error: any) {
+          } catch (error: unknown) {
           attempt++;
           
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          const axiosError = error as { response?: { status?: number }; message?: string };
+          
           // Don't retry on 403 or other 4xx errors
-          if (error.message?.includes('403') || error.message?.includes('Forbidden')) {
+          if (errorMessage?.includes('403') || errorMessage?.includes('Forbidden')) {
             logger.error(`GeckoTerminal permanently blocked (403). Check network/VPN/firewall settings.`);
             throw error;
           }
           
-          if (attempt >= maxAttempts || (error.response?.status && error.response.status !== 429 && error.response.status !== 503)) {
-            logger.error(`GeckoTerminal request failed after ${attempt} attempts:`, error.message);
+          if (attempt >= maxAttempts || (axiosError.response?.status && axiosError.response.status !== 429 && axiosError.response.status !== 503)) {
+            logger.error(`GeckoTerminal request failed after ${attempt} attempts:`, errorMessage);
             throw error;
           }
           
@@ -153,18 +156,21 @@ export class GeckoTerminalClient {
       await redisService.set(cacheKey, memeCoin, config.cache.ttlSeconds);
 
       return memeCoin;
-        } catch (error: any) {
-          if (error.response || error.request) {
-        if (error.response?.status === 403) {
+        } catch (error: unknown) {
+          const axiosError = error as { response?: { status?: number }; request?: unknown; message?: string };
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          
+          if (axiosError.response || axiosError.request) {
+        if (axiosError.response?.status === 403) {
           logger.error(`GeckoTerminal 403 Forbidden for ${tokenAddress} - Possible network/firewall block. Check VPN/firewall settings.`);
-        } else if (error.response?.status === 404) {
+        } else if (axiosError.response?.status === 404) {
           logger.debug(`GeckoTerminal 404 - Token not found: ${tokenAddress}`);
           return null;
         } else {
-          logger.error(`GeckoTerminal API error for ${tokenAddress}:`, error.response?.status, error.message);
+          logger.error(`GeckoTerminal API error for ${tokenAddress}:`, axiosError.response?.status, errorMessage);
         }
       } else {
-        logger.error(`GeckoTerminal API error for ${tokenAddress}:`, error.message);
+        logger.error(`GeckoTerminal API error for ${tokenAddress}:`, errorMessage);
       }
       return null; // Return null instead of throwing
     }
@@ -194,17 +200,19 @@ export class GeckoTerminalClient {
         return [];
       }
 
-      const memeCoins = response.data.data.map((item: any) =>
-        this.transformResponse(item, item.relationships?.network?.data?.id || 'unknown')
+      const memeCoins = response.data.data.map((item: GeckoTerminalResponse['data'][0]) =>
+        this.transformResponse(item, (item.relationships?.network?.data?.id as string) || 'unknown')
       );
 
       await redisService.set(cacheKey, memeCoins, config.cache.ttlSeconds);
 
       return memeCoins;
-    } catch (error: any) {
-      logger.error('GeckoTerminal search error:', error.message);
-      if (error.response || error.request) {
-        throw new Error(`GeckoTerminal search error: ${error.response?.status} ${error.response?.statusText}`);
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { status?: number; statusText?: string }; request?: unknown; message?: string };
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      logger.error('GeckoTerminal search error:', errorMessage);
+      if (axiosError.response || axiosError.request) {
+        throw new Error(`GeckoTerminal search error: ${axiosError.response?.status} ${axiosError.response?.statusText}`);
       }
       throw error;
     }

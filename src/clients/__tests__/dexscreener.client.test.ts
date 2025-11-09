@@ -47,7 +47,7 @@ describe('DexScreenerClient', () => {
 
       mockedAxios.create.mockReturnValue({
         get: jest.fn().mockResolvedValue(mockResponse),
-      } as any);
+      } as unknown as ReturnType<typeof axios.create>);
 
       mockedRedis.get.mockResolvedValue(null);
       mockedRedis.set.mockResolvedValue(undefined);

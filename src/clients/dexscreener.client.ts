@@ -22,7 +22,7 @@ export class DexScreenerClient {
       // Handle SSL certificate issues in development
       ...(config.server.nodeEnv === 'development' && {
         httpsAgent: new https.Agent({ rejectUnauthorized: false }),
-      } as any),
+      }),
     });
 
     // Reset rate limit counter every minute
@@ -110,17 +110,20 @@ export class DexScreenerClient {
               throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
             
-          } catch (error: any) {
+          } catch (error: unknown) {
             attempt++;
             
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            const axiosError = error as { response?: { status?: number }; message?: string };
+            
             // Don't retry on 403 or other 4xx errors
-            if (error.message?.includes('403') || error.message?.includes('Forbidden')) {
+            if (errorMessage?.includes('403') || errorMessage?.includes('Forbidden')) {
               logger.error(`DexScreener permanently blocked (403). Check network/VPN/firewall settings.`);
               throw error;
             }
             
-            if (attempt >= maxAttempts || (error.response?.status && error.response.status !== 429 && error.response.status !== 503)) {
-              logger.error(`DexScreener request failed after ${attempt} attempts:`, error.message);
+            if (attempt >= maxAttempts || (axiosError.response?.status && axiosError.response.status !== 429 && axiosError.response.status !== 503)) {
+              logger.error(`DexScreener request failed after ${attempt} attempts:`, errorMessage);
               throw error;
             }
             
@@ -154,15 +157,18 @@ export class DexScreenerClient {
         } else {
           logger.warn(`DexScreener response missing pairs data for ${address}. Response:`, JSON.stringify(response.data).substring(0, 200));
         }
-        } catch (error: any) {
-          if (error.response || error.request) {
-          if (error.response?.status === 403) {
+        } catch (error: unknown) {
+          const axiosError = error as { response?: { status?: number }; request?: unknown; message?: string };
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          
+          if (axiosError.response || axiosError.request) {
+          if (axiosError.response?.status === 403) {
             logger.error(`DexScreener 403 Forbidden for ${address} - Possible network/firewall block. Check VPN/firewall settings.`);
           } else {
-            logger.error(`DexScreener API error for ${address}:`, error.response?.status, error.message);
+            logger.error(`DexScreener API error for ${address}:`, axiosError.response?.status, errorMessage);
           }
         } else {
-          logger.error(`DexScreener API error for ${address}:`, error.message);
+          logger.error(`DexScreener API error for ${address}:`, errorMessage);
         }
         // Continue to next address instead of throwing
         continue;
@@ -195,10 +201,12 @@ export class DexScreenerClient {
       await redisService.set(cacheKey, memeCoins, config.cache.ttlSeconds);
 
       return memeCoins;
-    } catch (error: any) {
-      logger.error('DexScreener search error:', error.message);
-      if (error.response || error.request) {
-        throw new Error(`DexScreener search error: ${error.response?.status} ${error.response?.statusText}`);
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { status?: number; statusText?: string }; request?: unknown; message?: string };
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      logger.error('DexScreener search error:', errorMessage);
+      if (axiosError.response || axiosError.request) {
+        throw new Error(`DexScreener search error: ${axiosError.response?.status} ${axiosError.response?.statusText}`);
       }
       throw error;
     }

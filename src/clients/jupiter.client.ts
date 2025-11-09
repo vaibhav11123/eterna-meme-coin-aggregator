@@ -65,8 +65,9 @@ export class JupiterClient {
       await redisService.set(cacheKey, prices, 15); // 15 seconds
 
       return prices;
-    } catch (error: any) {
-      logger.error('Jupiter API error:', error.message);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      logger.error('Jupiter API error:', errorMessage);
       return {};
     }
   }
