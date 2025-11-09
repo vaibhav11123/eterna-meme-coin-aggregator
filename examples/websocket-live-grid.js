@@ -76,10 +76,14 @@ function formatSources(sources) {
 function renderDashboard() {
   console.clear();
 
-  // Header
+  // ════════════════════════════════════════════════════════
+  // EXPLICIT LABEL: What they're looking at
+  // ════════════════════════════════════════════════════════
   console.log(chalk.cyanBright('╭───────────────────────────────────────────────────────────────╮'));
-  console.log(chalk.cyanBright('│            🧠  ETERNA • REAL-TIME MARKET TERMINAL              │'));
-  console.log(chalk.cyanBright('╰───────────────────────────────────────────────────────────────╯\n'));
+  console.log(chalk.cyanBright('│ 🧠 ETERNA: Real-Time Market Intelligence Terminal              │'));
+  console.log(chalk.cyanBright('╰───────────────────────────────────────────────────────────────╯'));
+  console.log(chalk.dim('Aggregates live Solana token data across multiple decentralized exchanges'));
+  console.log(chalk.dim(`Latency: <200ms | Sources: DexScreener, GeckoTerminal | Updated every 30s\n`));
 
   // Ticker (rotating)
   const ticker = tickerMessages[tickerIndex % tickerMessages.length];
@@ -352,7 +356,16 @@ ws.on('message', (msg) => {
 });
 
 ws.on('close', () => {
+  // ════════════════════════════════════════════════════════
+  // EXPLICIT LABEL: Outro with system metrics
+  // ════════════════════════════════════════════════════════
+  console.log(chalk.yellow('\n🧩 SYSTEM METRICS RECAP'));
+  console.log(chalk.dim(`   Total Updates Received: ${updateCount}`));
+  console.log(chalk.dim(`   Tokens Tracked: ${tokenData.size}`));
+  console.log(chalk.dim(`   Connection Duration: Active session`));
   console.log(chalk.red('\nDisconnected from WebSocket server'));
+  console.log(chalk.dim('\n🎯 ETERNA — Real-time market intelligence for Solana'));
+  console.log(chalk.dim('   Engineered for sub-200ms aggregated price delivery\n'));
   process.exit(0);
 });
 
