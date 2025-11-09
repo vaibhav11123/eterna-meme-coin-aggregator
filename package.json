@@ -18,7 +18,8 @@
     "ws:cinematic": "node examples/websocket-live-cinematic.js",
     "ws:simple": "node examples/websocket-simple-demo.js",
     "ws:demo": "node examples/websocket-live-demo.js",
-    "test:tokens": "./examples/test-multiple-tokens.sh"
+    "test:tokens": "./examples/test-multiple-tokens.sh",
+    "demo:complete": "./examples/demo-complete.sh"
   },
   "keywords": [
     "meme-coin",

@@ -1,0 +1,303 @@
+{
+  "info": {
+    "name": "Eterna Meme Coin Aggregator",
+    "description": "Real-time aggregation of Solana meme coin data from multiple DEX sources",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "eterna-aggregator"
+  },
+  "item": [
+    {
+      "name": "Health & Status",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://eterna-aggregator.onrender.com/api/health",
+              "protocol": "https",
+              "host": ["eterna-aggregator", "onrender", "com"],
+              "path": ["api", "health"]
+            },
+            "description": "Basic health check endpoint"
+          }
+        },
+        {
+          "name": "Status (Comprehensive)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://eterna-aggregator.onrender.com/api/status",
+              "protocol": "https",
+              "host": ["eterna-aggregator", "onrender", "com"],
+              "path": ["api", "status"]
+            },
+            "description": "Comprehensive service status with cache metrics, performance, and WebSocket connections"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Token Data",
+      "item": [
+        {
+          "name": "Get Tokens (Single)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://eterna-aggregator.onrender.com/api/tokens?addresses=So11111111111111111111111111111111111111112",
+              "protocol": "https",
+              "host": ["eterna-aggregator", "onrender", "com"],
+              "path": ["api", "tokens"],
+              "query": [
+                {
+                  "key": "addresses",
+                  "value": "So11111111111111111111111111111111111111112",
+                  "description": "SOL token address"
+                }
+              ]
+            },
+            "description": "Fetch data for a single token"
+          }
+        },
+        {
+          "name": "Get Tokens (Multiple)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://eterna-aggregator.onrender.com/api/tokens?addresses=So11111111111111111111111111111111111111112,EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v,DezXQkJ8VNVoU8HEHrAxeRBxyvRkrLNzdeqjVqm3Z6vL",
+              "protocol": "https",
+              "host": ["eterna-aggregator", "onrender", "com"],
+              "path": ["api", "tokens"],
+              "query": [
+                {
+                  "key": "addresses",
+                  "value": "So11111111111111111111111111111111111111112,EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v,DezXQkJ8VNVoU8HEHrAxeRBxyvRkrLNzdeqjVqm3Z6vL",
+                  "description": "Comma-separated token addresses"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Tokens with Pagination",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://eterna-aggregator.onrender.com/api/tokens?addresses=So11111111111111111111111111111111111111112&limit=2&cursor=",
+              "protocol": "https",
+              "host": ["eterna-aggregator", "onrender", "com"],
+              "path": ["api", "tokens"],
+              "query": [
+                {
+                  "key": "addresses",
+                  "value": "So11111111111111111111111111111111111111112"
+                },
+                {
+                  "key": "limit",
+                  "value": "2",
+                  "description": "Results per page"
+                },
+                {
+                  "key": "cursor",
+                  "value": "",
+                  "description": "Base64-encoded cursor from previous response",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Tokens with Interval Filter",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://eterna-aggregator.onrender.com/api/tokens?addresses=So11111111111111111111111111111111111111112&interval=1h",
+              "protocol": "https",
+              "host": ["eterna-aggregator", "onrender", "com"],
+              "path": ["api", "tokens"],
+              "query": [
+                {
+                  "key": "addresses",
+                  "value": "So11111111111111111111111111111111111111112"
+                },
+                {
+                  "key": "interval",
+                  "value": "1h",
+                  "description": "Time period: 1h, 24h, or 7d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Search",
+      "item": [
+        {
+          "name": "Search Tokens",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://eterna-aggregator.onrender.com/api/search?query=pepe&limit=20",
+              "protocol": "https",
+              "host": ["eterna-aggregator", "onrender", "com"],
+              "path": ["api", "search"],
+              "query": [
+                {
+                  "key": "query",
+                  "value": "pepe",
+                  "description": "Search query (token name or symbol)"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Number of results"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Top Movers",
+      "item": [
+        {
+          "name": "Top by Volume",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://eterna-aggregator.onrender.com/api/top?metric=volume24h&limit=10",
+              "protocol": "https",
+              "host": ["eterna-aggregator", "onrender", "com"],
+              "path": ["api", "top"],
+              "query": [
+                {
+                  "key": "metric",
+                  "value": "volume24h",
+                  "description": "Sorting metric: volume24h, priceChangePercent24h, marketCap, liquidity"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Top Price Movers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://eterna-aggregator.onrender.com/api/top?metric=priceChangePercent24h&limit=10",
+              "protocol": "https",
+              "host": ["eterna-aggregator", "onrender", "com"],
+              "path": ["api", "top"],
+              "query": [
+                {
+                  "key": "metric",
+                  "value": "priceChangePercent24h"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Top with Pagination",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://eterna-aggregator.onrender.com/api/top?metric=volume24h&limit=5&cursor=",
+              "protocol": "https",
+              "host": ["eterna-aggregator", "onrender", "com"],
+              "path": ["api", "top"],
+              "query": [
+                {
+                  "key": "metric",
+                  "value": "volume24h"
+                },
+                {
+                  "key": "limit",
+                  "value": "5"
+                },
+                {
+                  "key": "cursor",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Top with Interval Filter",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://eterna-aggregator.onrender.com/api/top?metric=volume24h&interval=7d",
+              "protocol": "https",
+              "host": ["eterna-aggregator", "onrender", "com"],
+              "path": ["api", "top"],
+              "query": [
+                {
+                  "key": "metric",
+                  "value": "volume24h"
+                },
+                {
+                  "key": "interval",
+                  "value": "7d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "WebSocket",
+      "item": [
+        {
+          "name": "WebSocket Connection",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "wss://eterna-aggregator.onrender.com/ws",
+              "protocol": "wss",
+              "host": ["eterna-aggregator", "onrender", "com"],
+              "path": ["ws"]
+            },
+            "description": "WebSocket endpoint for real-time updates. Connect and send:\n{\n  \"type\": \"subscribe\",\n  \"tokenAddresses\": [\"So11111111111111111111111111111111111111112\"]\n}"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://eterna-aggregator.onrender.com",
+      "type": "string"
+    }
+  ]
+}
+
