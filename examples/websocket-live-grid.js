@@ -191,6 +191,8 @@ function renderDashboard() {
 ws.on('open', () => {
   console.log(chalk.gray(`Connecting to ${WS_URL}...`));
   console.log(chalk.dim(`Subscribing to ${TOKENS.length} token(s)...\n`));
+  console.log(chalk.yellow('💡 Tip: If you see "Waiting for market data...", warm the cache first:'));
+  console.log(chalk.yellow('   curl -s "https://eterna-aggregator.onrender.com/api/tokens?addresses=So11111111111111111111111111111111111111112,EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" > /dev/null\n'));
 
   ws.send(JSON.stringify({
     type: 'subscribe',
@@ -209,6 +211,16 @@ ws.on('message', (msg) => {
 
     if (payload.type === 'subscribed') {
       console.log(chalk.green(`✓ Subscribed to ${payload.tokenAddresses.length} token(s)\n`));
+      console.log(chalk.dim('Waiting for initial data snapshot...\n'));
+      // Give it a moment for initial snapshot
+      setTimeout(() => {
+        if (tokenData.size === 0) {
+          console.log(chalk.yellow('⚠ No data received yet. This might mean:'));
+          console.log(chalk.yellow('  1. Cache is empty - warm it first with an API call'));
+          console.log(chalk.yellow('  2. Server is still fetching data (wait a few seconds)'));
+          console.log(chalk.yellow('  3. Tokens may not be available\n'));
+        }
+      }, 3000);
       return;
     }
 
@@ -278,7 +290,13 @@ ws.on('close', () => {
 });
 
 ws.on('error', (err) => {
-  console.error(chalk.red(`WebSocket error: ${err.message}`));
+  const errorMsg = err.message || err.toString() || 'Unknown error';
+  console.error(chalk.red(`\nWebSocket error: ${errorMsg}`));
+  console.log(chalk.yellow('\nTroubleshooting:'));
+  console.log(chalk.yellow('  1. Make sure the server is running'));
+  console.log(chalk.yellow('  2. Check your internet connection'));
+  console.log(chalk.yellow('  3. Try warming the cache first:'));
+  console.log(chalk.yellow('     curl -s "https://eterna-aggregator.onrender.com/api/tokens?addresses=So11111111111111111111111111111111111111112" > /dev/null'));
   process.exit(1);
 });
 
