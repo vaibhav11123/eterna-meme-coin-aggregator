@@ -13,7 +13,7 @@ const WebSocket = require('ws');
 const chalk = require('chalk');
 const Table = require('cli-table3');
 
-const WS_URL = process.env.WS_URL || 'ws://localhost:3000/ws';
+const WS_URL = process.env.WS_URL || 'wss://eterna-aggregator.onrender.com/ws';
 
 // Default tokens: SOL, BONK, USDC
 const TOKENS = process.argv.length >= 5
@@ -191,13 +191,55 @@ function renderDashboard() {
 ws.on('open', () => {
   console.log(chalk.gray(`Connecting to ${WS_URL}...`));
   console.log(chalk.dim(`Subscribing to ${TOKENS.length} token(s)...\n`));
-  console.log(chalk.yellow('💡 Tip: If you see "Waiting for market data...", warm the cache first:'));
-  console.log(chalk.yellow('   curl -s "https://eterna-aggregator.onrender.com/api/tokens?addresses=So11111111111111111111111111111111111111112,EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" > /dev/null\n'));
 
   ws.send(JSON.stringify({
     type: 'subscribe',
     tokenAddresses: TOKENS,
   }));
+
+  // Request an immediate cached snapshot after subscribing (instant data display)
+  setTimeout(() => {
+    const API_URL = 'https://eterna-aggregator.onrender.com';
+    const tokenQuery = TOKENS.join(',');
+    const url = `${API_URL}/api/tokens?addresses=${tokenQuery}`;
+    
+    https.get(url, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(data);
+          if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+            json.data.forEach(token => {
+              // Store the full token object with all properties
+              const tokenToStore = {
+                ...token,
+                sources: Array.isArray(token.sources) ? token.sources : (token.sources ? [token.sources] : []),
+                confidenceScore: token.confidenceScore,
+                lastPrice: token.lastPrice || (token.priceData?.price || token.averagePrice || 0),
+              };
+
+              if (token.token && token.token.symbol) {
+                tokenData.set(token.token.symbol, tokenToStore);
+              } else if (token.token && token.token.address) {
+                tokenData.set(token.token.address, tokenToStore);
+              }
+            });
+            
+            if (tokenData.size > 0) {
+              updateCount++;
+              renderDashboard();
+              console.log(chalk.green(`✓ Loaded ${tokenData.size} token(s) from cache instantly\n`));
+            }
+          }
+        } catch (e) {
+          // Silently fail - WebSocket will provide updates anyway
+        }
+      });
+    }).on('error', () => {
+      // Silently fail - WebSocket will provide updates anyway
+    });
+  }, 1000);
 });
 
 ws.on('message', (msg) => {
