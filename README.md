@@ -229,6 +229,26 @@ docker-compose down
 
 ### REST API
 
+#### GET `/`
+Root endpoint that returns service information and available endpoints.
+
+**Response:**
+```json
+{
+  "name": "Eterna Meme Coin Aggregator",
+  "version": "1.0.0",
+  "endpoints": {
+    "health": "/api/health",
+    "status": "/api/status",
+    "tokens": "/api/tokens?addresses=So11111111111111111111111111111111111111112",
+    "search": "/api/search?query=pepe",
+    "top": "/api/top?metric=volume24h&limit=10",
+    "metrics": "/api/metrics",
+    "websocket": "/ws"
+  }
+}
+```
+
 #### GET `/api/tokens`
 Get aggregated token data for specific addresses with cursor-based pagination and time period filtering.
 
@@ -418,11 +438,23 @@ Analytics dashboard endpoint with performance metrics.
 #### GET `/debug/health` (Development Only)
 Enhanced health check with Redis status and metrics.
 
+#### GET `/debug/test-dexscreener/:address` (Development Only)
+Test DexScreener API directly for a specific token address.
+
+#### GET `/debug/test-gecko/:address` (Development Only)
+Test GeckoTerminal API directly for a specific token address.
+
+#### GET `/debug/test-redis` (Development Only)
+Test Redis connection with read/write operations.
+
 #### GET `/debug/sources` (Development Only)
 Shows active API sources with latency statistics.
 
 #### GET `/debug/cache/:key` (Development Only)
 Inspect cached data for a specific key.
+
+#### GET `/debug/clear-cache` (Development Only)
+Clear all cached data (use with caution).
 
 ### WebSocket API
 
@@ -522,20 +554,53 @@ npm run test:watch
 
 **CI/CD:** Tests run automatically on push via GitHub Actions
 
+## 🎬 Demo Scripts
+
+The project includes several WebSocket demo scripts for showcasing real-time capabilities:
+
+```bash
+# Simple WebSocket demo
+npm run ws:simple
+
+# Live test with real-time updates
+npm run ws:test
+
+# Dual-column layout demo
+npm run ws:dual
+
+# Grid layout demo
+npm run ws:grid
+
+# Cinematic demo with animations
+npm run ws:cinematic
+
+# Full featured demo
+npm run ws:demo
+
+# Complete demo sequence
+npm run demo:complete
+
+# Test multiple tokens
+npm run test:tokens
+```
+
+These scripts are located in the `examples/` directory and demonstrate various WebSocket client implementations.
+
 ## Project Structure
 
 ```
 Eterna/
 ├── src/
-│   ├── clients/          # API clients (DexScreener, GeckoTerminal)
+│   ├── clients/          # API clients (DexScreener, GeckoTerminal, Jupiter)
 │   ├── services/         # Business logic (Aggregator, Redis, WebSocket)
-│   ├── routes/           # Express routes
-│   ├── middleware/       # Express middleware
-│   ├── utils/            # Utilities (logger, etc.)
+│   ├── routes/           # Express routes (API, metrics, status, top, debug)
+│   ├── middleware/       # Express middleware (rate limiting)
+│   ├── utils/            # Utilities (logger, metrics, pagination, interval filter)
 │   ├── config/           # Configuration
 │   ├── types/            # TypeScript types
 │   └── index.ts          # Entry point
-├── tests/                # Test files
+├── examples/             # WebSocket demo scripts and test scripts
+├── dist/                 # Compiled JavaScript (generated)
 ├── docker-compose.yml    # Docker Compose configuration
 ├── Dockerfile           # Docker image definition
 └── package.json         # Dependencies and scripts
