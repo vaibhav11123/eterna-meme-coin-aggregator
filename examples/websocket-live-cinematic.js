@@ -16,7 +16,6 @@ const WebSocket = require('ws');
 const chalk = require('chalk');
 const boxen = require('boxen');
 const readline = require('readline');
-const ansiEscapes = require('ansi-escapes');
 
 const WS_URL = process.env.WS_URL || 'wss://eterna-aggregator.onrender.com/ws';
 
@@ -253,7 +252,8 @@ function render() {
         }
         updateCount++;
         heartbeat(); // Pulse with every update - this is the hypnotic rhythm!
-        process.stdout.write(ansiEscapes.cursorTo(0, 0));
+        // Use readline for cursor positioning (more reliable than ansiEscapes)
+        readline.cursorTo(process.stdout, 0, 0);
         render();
         return;
       }
