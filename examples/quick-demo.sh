@@ -62,6 +62,17 @@ echo -e "${YELLOW}Press Ctrl+C to stop${NC}"
 echo ""
 sleep 2
 
-# Launch cinematic with production URL
-WS_URL="$WS_URL" npm run ws:cinematic
+# Launch WebSocket demo (using simple version for reliability)
+echo -e "${YELLOW}Choose demo mode:${NC}"
+echo "  1. Simple demo (recommended - always works)"
+echo "  2. Cinematic demo (Bloomberg-style)"
+echo ""
+read -p "Enter choice (1 or 2, default 1): " choice
+choice=${choice:-1}
+
+if [ "$choice" = "2" ]; then
+    WS_URL="$WS_URL" npm run ws:cinematic
+else
+    WS_URL="$WS_URL" npm run ws:simple
+fi
 

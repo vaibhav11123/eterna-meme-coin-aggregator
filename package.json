@@ -16,6 +16,7 @@
     "ws:dual": "node examples/websocket-live-dual.js",
     "ws:grid": "node examples/websocket-live-grid.js",
     "ws:cinematic": "node examples/websocket-live-cinematic.js",
+    "ws:simple": "node examples/websocket-simple-demo.js",
     "ws:demo": "node examples/websocket-live-demo.js",
     "test:tokens": "./examples/test-multiple-tokens.sh"
   },
